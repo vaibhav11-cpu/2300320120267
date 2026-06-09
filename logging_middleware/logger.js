@@ -1,26 +1,22 @@
+import axios from "axios";
 
-
-const axios = require("axios");
-
-async function Log(stack, level, pkg, message) {
+export async function Log(stack, level, pkg, message, token) {
   try {
     await axios.post(
-      "http://20.244.56.144/evaluation-service/logs",
+      "http://4.224.186.213/evaluation-service/logs",
       {
         stack,
         level,
         package: pkg,
-        message
+        message,
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
-  } catch (err) {
-    console.error(err);
+  } catch (error) {
+    console.log("Log failed");
   }
 }
-
-module.exports = Log;

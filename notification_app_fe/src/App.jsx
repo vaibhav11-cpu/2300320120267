@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import NotificationCard from "./components/NotificationCard";
 import { getNotifications } from "./services/notificationService";
 import { getTopNotifications } from "./utils/getTopNotifications";
+import { Log } from "../../logging_middleware/logger";
 
+Log(
+  "frontend",
+  "info",
+  "component",
+  "Notification dashboard loaded",
+  token
+);
 function App() {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState("All");
