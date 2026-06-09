@@ -1,0 +1,137 @@
+clientID":"4e0d51f0-a632-48fd-87b0-718745266c62","clientSecret":"keUtmGajQpnVncDc
+
+{"token_type":"Bearer","access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJ2YWliaGF2Z2hnb3lhbDU2N0BnbWFpbC5jb20iLCJleHAiOjE3ODA5ODYyMTksImlhdCI6MTc4MDk4NTMxOSwiaXNzIjoiQWZmb3JkIE1lZGljYWwgVGVjaG5vbG9naWVzIFByaXZhdGUgTGltaXRlZCIsImp0aSI6IjRkZTgzYTY2LTJjOTMtNGFjNS1hMjBkLWEwMTRkNTk3Yzk5YiIsImxvY2FsZSI6ImVuLUlOIiwibmFtZSI6InZhaWJoYXYgZ295YWwiLCJzdWIiOiI0ZTBkNTFmMC1hNjMyLTQ4ZmQtODdiMC03MTg3NDUyNjZjNjIifSwiZW1haWwiOiJ2YWliaGF2Z2hnb3lhbDU2N0BnbWFpbC5jb20iLCJuYW1lIjoidmFpYmhhdiBnb3lhbCIsInJvbGxObyI6IjIzMDAzMjAxMjAyNjciLCJhY2Nlc3NDb2RlIjoiY1h1cWh0IiwiY2xpZW50SUQiOiI0ZTBkNTFmMC1hNjMyLTQ4ZmQtODdiMC03MTg3NDUyNjZjNjIiLCJjbGllbnRTZWNyZXQiOiJrZVV0bUdhalFwblZuY0RjIn0.01gqNkb2PkeVQRittZy1usa8_8KUjSB4OswH1V3iYrA","expires_in":1780986219}
+
+
+
+
+From your screenshots, this is not a normal Express logger middleware. Affordmed wants you to build a custom logging package that calls their Log API.
+
+For Full Stack, your repository should look like:
+
+logging_middleware/
+notification_app_be/
+notification_app_fe/
+notification_system_design.md
+What to do first
+1. Create logging_middleware
+
+Inside it create:
+
+logging_middleware/
+├── auth.js
+├── logger.js
+├── constants.js
+└── package.json
+2. Register and get token
+
+Call:
+
+POST /evaluation-service/register
+
+Get:
+
+{
+  "clientID": "...",
+  "clientSecret": "..."
+}
+
+Then call:
+
+POST /evaluation-service/auth
+
+Store:
+
+const ACCESS_TOKEN = "...";
+3. Create reusable logger
+// logging_middleware/logger.js
+
+const axios = require("axios");
+
+async function Log(stack, level, pkg, message) {
+  try {
+    await axios.post(
+      "http://20.244.56.144/evaluation-service/logs",
+      {
+        stack,
+        level,
+        package: pkg,
+        message
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+module.exports = Log;
+Where to use in Full Stack?
+Backend
+// server start
+Log("backend", "info", "route", "Server started");
+// controller
+Log("backend", "info", "controller", "Fetching notifications");
+catch(error){
+ Log("backend","error","controller",error.message);
+}
+
+Packages allowed for backend:
+
+cache
+controller
+cron_job
+db
+domain
+handler
+repository
+route
+service
+Frontend (React)
+useEffect(() => {
+   Log(
+      "frontend",
+      "info",
+      "component",
+      "Notification page mounted"
+   );
+}, []);
+
+Packages allowed:
+
+api
+component
+hook
+page
+state
+style
+Most important observation from your screenshots
+
+The document says:
+
+Write a reusable function matching:
+
+Log(stack, level, package, message)
+
+So the evaluator will likely search for a function with this exact signature.
+
+Use:
+
+Log("backend","error","handler","received string, expected bool");
+
+not:
+
+logger.error(...)
+For Full Stack submission
+Repo
+│
+├── logging_middleware   ← build first
+├── notification_app_be
+├── notification_app_fe
+└── notification_system_design.md
+
+Build the Log() utility first, then import it everywhere in backend and frontend. That's the core requirement shown in your screenshots.
